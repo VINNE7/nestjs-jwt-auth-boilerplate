@@ -1,0 +1,15 @@
+services:
+  nest-jwt-boilerplate:
+    build: .
+    ports:
+      - '8081:3001'
+    volumes:
+      - .:/src
+  db:
+    container_name: pg-db
+    image: postgres:15
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '5433:5432'

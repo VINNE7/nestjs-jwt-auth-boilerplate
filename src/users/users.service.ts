@@ -58,6 +58,16 @@ export class UsersService {
     return user;
   }
 
+  public async updateByPassword(
+    email: string,
+    password: string,
+  ): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ email: email });
+    user.password = await this.hashingService.hash(password);
+
+    return await this.usersRepository.save(user);
+  }
+
   async updatePasswordByEmail(email: string): Promise<User> {
     try {
       const user = await this.usersRepository.findOneBy({ email: email });

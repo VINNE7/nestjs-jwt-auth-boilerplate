@@ -2,7 +2,9 @@ import * as Mail from 'nodemailer/lib/mailer';
 import { createTransport } from 'nodemailer';
 import * as hbs from 'nodemailer-express-handlebars';
 import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class MailerService {
   private nodemailerTransport: Mail;
 

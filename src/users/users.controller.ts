@@ -1,34 +1,70 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  BadRequestException,
+  Put,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
+import { UserProfileDto } from './dto/update-user-profile.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
   @Get()
-  findAll() {
+  public async findAllUser(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @Get('/:userId')
+  public async findOneUser(@Param('userId') userId: string): Promise<User> {
+    return this.usersService.findById(userId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @Put('/:userId/profile')
+  public async updateProfileUser(
+    @Param('userId') userId: string,
+    @Body() userProfileDto: UserProfileDto,
+  ): Promise<any> {
+    try {
+      await this.usersService.updateUserProfile(userId, userProfileDto);
+
+      return {
+        message: 'User Updated successfully!',
+        status: HttpStatus.OK,
+      };
+    } catch (err) {
+      throw new BadRequestException(err, 'Error: User not updated!');
+    }
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @Put('/:userId')
+  public async updateUser(
+    @Param('userId') userId: string,
+    @Body() userUpdateDto: UpdateUserDto,
+  ) {
+    try {
+      await this.usersService.update(userId, userUpdateDto);
+
+      return {
+        message: 'User Updated successfully!',
+        status: HttpStatus.OK,
+      };
+    } catch (err) {
+      throw new BadRequestException(err, 'Error: User not updated!');
+    }
+  }
+
+  @Delete('/:userId')
+  public async deleteUser(@Param('userId') userId: string): Promise<void> {
+    await this.usersService.remove(userId);
   }
 }

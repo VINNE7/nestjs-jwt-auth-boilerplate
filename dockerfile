@@ -1,13 +1,24 @@
-FROM node:latest
+# fase base para todas as outras fases
+FROM node:lts-slim AS base
+RUN mkdir -p /home/node/app && chown node:node /home/node/app 
+WORKDIR /home/node/app 
+USER node 
 
-WORKDIR /src
+# fase para reaproveitar com o docker-compose de dev
+FROM base AS dependencies
+COPY --chown=node:node ./package*.json ./
+RUN npm i
+COPY --chown=node:node . .
 
-COPY . .
+FROM dependencies AS build
+RUN npm run build
 
-COPY ./.env ./.env
-
-RUN npm install --quiet --no-optional --no-fund --loglevel=error
-
-EXPOSE 8081
-
-CMD ["npm", "run", "start:dev"]
+FROM base AS production
+ENV NODE_ENV=production
+ENV PORT=$PORT
+ENV HOST=0.0.0.0
+COPY --chown=node:node ./package*.json ./
+RUN npm i --omit=dev 
+COPY --chown=node:node --from=build /home/node/app/dist .
+EXPOSE $PORT
+CMD [ "node", "main.js" ]

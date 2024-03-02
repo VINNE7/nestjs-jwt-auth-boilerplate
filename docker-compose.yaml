@@ -1,15 +1,46 @@
+version: '3.8'
+
 services:
-  nest-jwt-boilerplate:
-    build: .
+  pgdb:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
-      - '8081:3001'
+      - 5432:5432
     volumes:
-      - .:/src
-  db:
-    container_name: pg-db
-    image: postgres:15
-    restart: always
+      - postgres-volume:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'pg_isready',
+          '-q',
+          '-d',
+          '${POSTGRES_DB}',
+          '-U',
+          '${POSTGRES_USER}',
+        ]
+      retries: 3
+      timeout: 5s
+
+  backend:
+    depends_on:
+      - pgdb
+    build:
+      context: .
+      target: dependencies
+    ports:
+      - ${NODE_API_PORT}:${NODE_API_PORT}
     env_file:
       - .env
-    ports:
-      - '5433:5432'
+    environment:
+      POSTGRES_HOST: pgdb
+      TYPEORM_HOST: pgdb
+    volumes:
+      - ./:/home/node/app
+    command: npm run start:dev
+
+volumes:
+  postgres-volume:

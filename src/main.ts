@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { configureSwaggerDocs } from './shared/helpers/configure-swagger-docs.helper';
+import { configureAuthSwaggerDocs } from './shared/helpers/configure-auth-swagger-docs.helper';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +27,12 @@ async function bootstrap() {
     credentials: true,
   });
   const port = configService.get<number>('NODE_API_PORT') || 3001;
+
+  // Swagger Configuration
+
+  configureAuthSwaggerDocs(app, configService);
+  configureSwaggerDocs(app, configService);
+
   await app.listen(port, '0.0.0.0');
   Logger.log(
     `${await app.getUrl()} - Enviroment: ${configService.get<string>(

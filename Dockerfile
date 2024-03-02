@@ -1,5 +1,5 @@
 # fase base para todas as outras fases
-FROM node:lts-slim AS base
+FROM node:lts AS base
 RUN mkdir -p /home/node/app && chown node:node /home/node/app 
 WORKDIR /home/node/app 
 USER node 
